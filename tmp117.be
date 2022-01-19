@@ -13,8 +13,8 @@ class TMP117: Driver
   var temperature     # temperature result in °C
   var ready           # true if sensor is available and not busy
   var temp_format     # function to convert temperature to formatted string
-  var tempres
-  var tempoffset
+  var tempres         # number of decimals from Tasmota settings
+  var tempoffset      # temperature offset config, from Tasmota settings
 
   def init()
     self.wire = tasmota.wire_scan(self.sensor_addr, 58)
@@ -25,9 +25,9 @@ class TMP117: Driver
     self.tempres    = 2
     self.tempoffset = 0
     self.create_formatter()
-    tasmota.add_rule("TempRes",    /value->self.create_formatter(value))
-    tasmota.add_rule("TempOffset", /value->self.create_formatter(nil,value))
-    tasmota.add_rule("SetOption8", /value->self.create_formatter())
+    tasmota.add_rule("TempRes",    /value -> self.create_formatter(value))
+    tasmota.add_rule("TempOffset", /value -> self.create_formatter(nil,value))
+    tasmota.add_rule("SetOption8", /value -> self.create_formatter())
     tasmota.cmd("Backlog TempRes; TempOffset")
     #- initialize sensor, if other measurement method is required -#
   end
