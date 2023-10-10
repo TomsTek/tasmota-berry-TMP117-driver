@@ -17,10 +17,12 @@ class TMP117: Driver
   var tempoffset      # temperature offset config, from Tasmota settings
 
   def init()
-    self.wire = tasmota.wire_scan(self.sensor_addr, 58)
+    self.wire = tasmota.wire_scan(self.sensor_addr)
     if self.wire
       #- write config Register / initialize Sensor -#
       print("I2C: "..self.sensor_name.." detected on bus "+str(self.wire.bus))
+    else
+      return
     end
     self.tempres    = 2
     self.tempoffset = 0
@@ -38,11 +40,11 @@ class TMP117: Driver
     var fahrenheit = tasmota.get_option(8) == 1
     print(self.sensor_name, "TempRes:"..self.tempres, "TempOffset:"..self.tempoffset, "Fahrenheit:"..fahrenheit)
     var tempmask = "%." .. self.tempres .. "f"
-    self.temp_format = 
-      def (temperature, display) 
+    self.temp_format =
+      def (temperature, display)
         import string
         return string.format(
-          tempmask .. (display ? " °" .. (fahrenheit ? "F" : "C") : ""), 
+          tempmask .. (display ? " °" .. (fahrenheit ? "F" : "C") : ""),
           (fahrenheit ? temperature * 1.8 + 32 : temperature) + self.tempoffset)
       end
   end
@@ -52,11 +54,11 @@ class TMP117: Driver
     if !self.wire return nil end  #- exit if not initialized -#
 
     #- sanity-check if sensor is accessible and ready
-     - (check bus-acknowledge and ready-Flag) 
+     - (check bus-acknowledge and ready-Flag)
      -#
     self.ready = self.wire.write(self.sensor_addr, 0x00, 0x00, 1)
     if !self.ready return nil end  #- exit if not available -#
-    
+
     # todo: read and check acknowledge-flag
     # if !self.ready return nil end  #- exit if not ready -#
 
@@ -64,7 +66,7 @@ class TMP117: Driver
     var t = b.get(0,-2)
 
     # todo: check for 0x8000 initial value
-    
+
     self.temperature = real(t)/128
     return self.temperature
   end
